@@ -1,91 +1,700 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-      var ball = document.createElement('div');
-      ball.style.width = '50px';
-      ball.style.height = '50px';
-      ball.style.backgroundColor = 'red';
-      ball.style.borderRadius = '50%';
-      ball.style.position = 'absolute';
-      ball.style.top = '0px';
-      ball.style.left = '0px';
-      document.body.appendChild(ball);
-
-      var x = 0;
-      var y = 0;
-      var xDirection = 1;
-      var yDirection = 1;
-      var xSpeed = 4;
-      var ySpeed = 4;
-
-      function moveBall() {
-        x += xDirection * xSpeed;
-        y += yDirection * ySpeed;
-        ball.style.left = x + 'px';
-        ball.style.top = y + 'px';
-        if (x > window.innerWidth - 50) {
-          xDirection = -1;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch The Ball</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        if (x < 0) {
-          xDirection = 1;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
-        if (y > window.innerHeight - 50) {
-          yDirection = -1;
+
+        #app {
+            width: 100%;
+            height: 100vh;
+            position: relative;
         }
-        if (y < 0) {
-          yDirection = 1;
+
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            padding: 20px;
         }
-      }
 
-      setInterval(moveBall, 10);
-
-      ball.addEventListener('mouseover', function () {
-        document.body.style.backgroundColor = 'rgb(' + Math.random() * 255 + ',' + Math.random() * 255 + ',' + Math.random() * 255 + ')';
-      });
-
-      var score = 0;
-      var scoreDisplay = document.createElement('div');
-      scoreDisplay.innerHTML = 'Score: ' + score;
-      document.body.appendChild(scoreDisplay);
-
-      ball.addEventListener('mouseover', function () {
-        score += 1;
-        scoreDisplay.innerHTML = 'Score: ' + score;
-      });
-
-      if (window.innerWidth < 800) {
-        alert('Only playable in pc or laptop!');
-      }
-
-      var highScore = localStorage.getItem('highScore');
-      if (highScore === null) {
-        highScore = 0;
-      }
-      var highScoreDisplay = document.createElement('div');
-      highScoreDisplay.innerHTML = 'High Score: ' + highScore;
-      document.body.appendChild(highScoreDisplay);
-
-      ball.addEventListener('mouseover', function () {
-        if (score > highScore) {
-          highScore = score;
-          highScoreDisplay.innerHTML = 'High Score: ' + highScore;
-          localStorage.setItem('highScore', highScore);
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9);
         }
-      });
 
-      ball.addEventListener('mouseover', function () {
-        xSpeed += 0.1;
-        ySpeed += 0.1;
-      });
-setInterval(function() {
-        document.title = "Catch The Ball - Score: " + score
- }, 1000);
-    });
-  </script>
+        h1 {
+            color: white;
+            font-size: 3em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+            to { text-shadow: 0 0 30px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.4); }
+        }
+
+        .input-group {
+            margin: 20px 0;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20px;
+            height: 200%;
+            background: rgba(255,255,255,0.3);
+            transform: rotate(25deg);
+            transition: all 0.4s;
+        }
+
+        .btn:hover::after {
+            left: 120%;
+        }
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        #ball {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c44569);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 20px rgba(255,107,107,0.6);
+            transition: box-shadow 0.2s;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #ball:hover {
+            box-shadow: 0 0 40px rgba(255,107,107,0.9);
+        }
+
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .high-score-display {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            color: #ffd700;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            z-index: 10;
+        }
+
+        .leaderboard {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .leaderboard h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .username {
+            flex-grow: 1;
+            color: #333;
+        }
+
+        .score {
+            font-weight: bold;
+            color: #c44569;
+        }
+
+        .top-three .rank {
+            color: #ffd700;
+        }
+
+        .combo-popup {
+            position: absolute;
+            color: #ffd700;
+            font-size: 2em;
+            font-weight: bold;
+            pointer-events: none;
+            animation: comboFloat 1s ease-out forwards;
+            text-shadow: 0 0 20px rgba(255,215,0,0.8);
+        }
+
+        @keyframes comboFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(1.5);
+            }
+        }
+
+        .warning {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,0,0,0.9);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            display: none;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .btn { font-size: 1em; padding: 12px 30px; }
+            #ball { width: 40px; height: 40px; }
+            .leaderboard { padding: 20px; }
+            .leaderboard-item { padding: 10px; }
+        }
+
+        .instructions {
+            color: white;
+            text-align: center;
+            max-width: 500px;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+    </style>
 </head>
+<body>
+    <div id="app"></div>
 
+    <script>
+        class CatchTheBallGame {
+            constructor() {
+                this.username = localStorage.getItem('ctbUsername');
+                this.score = 0;
+                this.highScore = parseInt(localStorage.getItem('ctbHighScore')) || 0;
+                this.gameState = 'menu'; // menu, playing, leaderboard
+                this.ball = null;
+                this.x = 0;
+                this.y = 0;
+                this.xDirection = 1;
+                this.yDirection = 1;
+                this.baseSpeed = 4;
+                this.xSpeed = this.baseSpeed;
+                this.ySpeed = this.baseSpeed;
+                this.lastCatchTime = 0;
+                this.clickIntervals = [];
+                this.gameStartTime = 0;
+                this.rafId = null;
+                this.lastFrameTime = 0;
+                this.cheatDetected = false;
+                this.isPaused = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.createScreens();
+                this.bindEvents();
+                this.showScreen('menu');
+            }
+
+            createScreens() {
+                const app = document.getElementById('app');
+                
+                app.innerHTML = `
+                    <!-- Menu Screen -->
+                    <div id="menu-screen" class="screen">
+                        <h1>⚽ Catch The Ball</h1>
+                        <div class="input-group">
+                            <input type="text" id="username-input" placeholder="Enter your username" maxlength="15" 
+                                   value="${this.username || ''}" />
+                        </div>
+                        <button class="btn" id="play-btn">Play Game</button>
+                        <button class="btn" id="leaderboard-btn">View Leaderboard</button>
+                        <div class="instructions">
+                            <p>Move your mouse over the ball to catch it!</p>
+                            <p>The ball gets faster and smaller as you score.</p>
+                            <p>Works on all devices - mobile & desktop!</p>
+                        </div>
+                    </div>
+
+                    <!-- Game Screen -->
+                    <div id="game-screen" class="screen hidden">
+                        <div class="score-display">Score: <span id="score-value">0</span></div>
+                        <div class="high-score-display">High Score: <span id="high-score-value">${this.highScore}</span></div>
+                        <button class="btn back-btn" id="back-btn">Back to Menu</button>
+                        <div class="game-area" id="game-area"></div>
+                        <div class="warning" id="warning">Cheating detected! Game ended.</div>
+                    </div>
+
+                    <!-- Leaderboard Screen -->
+                    <div id="leaderboard-screen" class="screen hidden">
+                        <button class="btn back-btn" id="lb-back-btn">Back to Menu</button>
+                        <div class="leaderboard">
+                            <h2>🏆 Top 100 Players</h2>
+                            <ol id="leaderboard-list" class="leaderboard-list"></ol>
+                            <button class="btn" id="clear-data-btn" style="background: #e74c3c; margin-top: 20px;">Clear My Data</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            bindEvents() {
+                // Menu events
+                document.getElementById('play-btn').addEventListener('click', () => this.startGame());
+                document.getElementById('leaderboard-btn').addEventListener('click', () => this.showLeaderboard());
+                
+                // Game events
+                document.getElementById('back-btn').addEventListener('click', () => this.endGame());
+                document.getElementById('lb-back-btn').addEventListener('click', () => this.showScreen('menu'));
+                
+                // Clear data
+                document.getElementById('clear-data-btn').addEventListener('click', () => {
+                    if (confirm('Clear all your data (username & scores)?')) {
+                        localStorage.removeItem('ctbUsername');
+                        localStorage.removeItem('ctbHighScore');
+                        localStorage.removeItem('ctbLeaderboard');
+                        this.username = null;
+                        this.highScore = 0;
+                        alert('Data cleared!');
+                        this.showScreen('menu');
+                    }
+                });
+
+                // Visibility change detection
+                document.addEventListener('visibilitychange', () => {
+                    if (this.gameState === 'playing') {
+                        this.isPaused = document.hidden;
+                    }
+                });
+
+                // Prevent right click
+                document.addEventListener('contextmenu', (e) => e.preventDefault());
+            }
+
+            showScreen(screenName) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+                document.getElementById(`${screenName}-screen`).classList.remove('hidden');
+                this.gameState = screenName;
+            }
+
+            startGame() {
+                const usernameInput = document.getElementById('username-input').value.trim();
+                if (!usernameInput) {
+                    alert('Please enter a username!');
+                    return;
+                }
+
+                if (usernameInput.length < 3) {
+                    alert('Username must be at least 3 characters!');
+                    return;
+                }
+
+                // Check for existing username in leaderboard
+                const existingUsernames = this.getLeaderboard().map(entry => entry.username.toLowerCase());
+                if (existingUsernames.includes(usernameInput.toLowerCase()) && usernameInput !== this.username) {
+                    alert('Username already taken! Choose another one.');
+                    return;
+                }
+
+                this.username = usernameInput;
+                localStorage.setItem('ctbUsername', usernameInput);
+                
+                this.score = 0;
+                this.xSpeed = this.baseSpeed;
+                this.ySpeed = this.baseSpeed;
+                this.lastCatchTime = 0;
+                this.clickIntervals = [];
+                this.cheatDetected = false;
+                this.isPaused = false;
+                this.gameStartTime = Date.now();
+
+                this.showScreen('game');
+                this.setupGameArea();
+                this.gameLoop();
+            }
+
+            setupGameArea() {
+                const gameArea = document.getElementById('game-area');
+                gameArea.innerHTML = '';
+                
+                this.ball = document.createElement('div');
+                this.ball.id = 'ball';
+                gameArea.appendChild(this.ball);
+
+                // Responsive ball size
+                const ballSize = window.innerWidth < 768 ? 40 : 50;
+                this.ball.style.width = ballSize + 'px';
+                this.ball.style.height = ballSize + 'px';
+
+                // Random starting position
+                this.x = Math.random() * (window.innerWidth - ballSize);
+                this.y = Math.random() * (window.innerHeight - ballSize);
+                this.ball.style.left = this.x + 'px';
+                this.ball.style.top = this.y + 'px';
+
+                // Add interaction events
+                const handleInteraction = (e) => {
+                    e.preventDefault();
+                    if (!this.isPaused && !this.cheatDetected) {
+                        this.catchBall();
+                    }
+                };
+
+                this.ball.addEventListener('mouseover', handleInteraction);
+                this.ball.addEventListener('touchstart', handleInteraction);
+
+                // Prevent touch scrolling
+                gameArea.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+            }
+
+            gameLoop(currentTime = 0) {
+                if (this.gameState !== 'playing') return;
+
+                // Anti-cheat: Detect slow/tab switch
+                if (this.lastFrameTime) {
+                    const deltaTime = currentTime - this.lastFrameTime;
+                    if (deltaTime > 100) { // More than 100ms between frames
+                        this.detectCheat('Slowdown detected');
+                    }
+                }
+                this.lastFrameTime = currentTime;
+
+                if (!this.isPaused && !this.cheatDetected) {
+                    this.moveBall();
+                }
+
+                if (!this.cheatDetected) {
+                    this.rafId = requestAnimationFrame((time) => this.gameLoop(time));
+                } else {
+                    this.endGame();
+                }
+            }
+
+            moveBall() {
+                const ballSize = parseInt(this.ball.style.width);
+                this.x += this.xDirection * this.xSpeed;
+                this.y += this.yDirection * this.ySpeed;
+
+                // Bounce off walls
+                if (this.x > window.innerWidth - ballSize || this.x < 0) {
+                    this.xDirection *= -1;
+                    this.x = Math.max(0, Math.min(this.x, window.innerWidth - ballSize));
+                }
+                if (this.y > window.innerHeight - ballSize - 100 || this.y < 0) {
+                    this.yDirection *= -1;
+                    this.y = Math.max(0, Math.min(this.y, window.innerHeight - ballSize - 100));
+                }
+
+                this.ball.style.left = this.x + 'px';
+                this.ball.style.top = this.y + 'px';
+            }
+
+            catchBall() {
+                const currentTime = Date.now();
+                
+                // Anti-cheat: Check click frequency
+                if (this.lastCatchTime) {
+                    const interval = currentTime - this.lastCatchTime;
+                    this.clickIntervals.push(interval);
+                    
+                    // Keep last 10 intervals
+                    if (this.clickIntervals.length > 10) {
+                        this.clickIntervals.shift();
+                    }
+
+                    // Check for autoclicker (too consistent intervals)
+                    if (this.clickIntervals.length >= 5) {
+                        const variance = this.calculateVariance(this.clickIntervals);
+                        if (variance < 5) { // Suspiciously consistent
+                            this.detectCheat('Autoclicker detected');
+                            return;
+                        }
+                    }
+
+                    // Check for impossibly fast clicks
+                    if (interval < 50) {
+                        this.detectCheat('Click speed too fast');
+                        return;
+                    }
+                }
+
+                this.lastCatchTime = currentTime;
+                this.score++;
+                
+                // Update UI
+                document.getElementById('score-value').textContent = this.score;
+                
+                // Visual feedback
+                this.showComboPopup();
+                this.changeBackgroundColor();
+                
+                // Increase difficulty
+                this.increaseDifficulty();
+                
+                // Update high score
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    document.getElementById('high-score-value').textContent = this.highScore;
+                    localStorage.setItem('ctbHighScore', this.highScore);
+                }
+            }
+
+            calculateVariance(arr) {
+                const mean = arr.reduce((a, b) => a + b) / arr.length;
+                const squaredDiffs = arr.map(val => (val - mean) ** 2);
+                return squaredDiffs.reduce((a, b) => a + b) / arr.length;
+            }
+
+            detectCheat(reason) {
+                this.cheatDetected = true;
+                document.getElementById('warning').style.display = 'block';
+                document.getElementById('warning').textContent = `Cheating detected: ${reason}! Game ended.`;
+                setTimeout(() => this.endGame(), 2000);
+            }
+
+            showComboPopup() {
+                const popup = document.createElement('div');
+                popup.className = 'combo-popup';
+                popup.textContent = `+1${this.score % 5 === 0 ? ' 🔥' : ''}`;
+                popup.style.left = this.x + 'px';
+                popup.style.top = this.y + 'px';
+                document.getElementById('game-area').appendChild(popup);
+                
+                setTimeout(() => popup.remove(), 1000);
+            }
+
+            changeBackgroundColor() {
+                const hue = (this.score * 30) % 360;
+                document.body.style.background = `linear-gradient(135deg, hsl(${hue}, 50%, 30%) 0%, hsl(${hue + 60}, 50%, 40%) 100%)`;
+            }
+
+            increaseDifficulty() {
+                // Increase speed
+                this.xSpeed += 0.1;
+                this.ySpeed += 0.1;
+                
+                // Decrease size (minimum 20px)
+                const currentSize = parseInt(this.ball.style.width);
+                if (currentSize > 20 && this.score % 5 === 0) {
+                    const newSize = currentSize - 2;
+                    this.ball.style.width = newSize + 'px';
+                    this.ball.style.height = newSize + 'px';
+                }
+            }
+
+            endGame() {
+                if (this.rafId) {
+                    cancelAnimationFrame(this.rafId);
+                }
+
+                // Check minimum game time (must play at least 3 seconds)
+                const gameDuration = Date.now() - this.gameStartTime;
+                if (gameDuration < 3000 && this.score > 10) {
+                    alert('Game too short! Score not saved.');
+                } else if (!this.cheatDetected) {
+                    this.saveScore();
+                }
+
+                // Reset
+                document.body.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
+                document.getElementById('warning').style.display = 'none';
+                
+                setTimeout(() => {
+                    alert(`Game Over!\nFinal Score: ${this.score}\n${this.score === this.highScore ? '🎉 New High Score!' : ''}`);
+                    this.showScreen('menu');
+                }, 500);
+            }
+
+            saveScore() {
+                const leaderboard = this.getLeaderboard();
+                const existingEntry = leaderboard.find(entry => entry.username === this.username);
+                
+                if (existingEntry) {
+                    // Update if score is higher
+                    if (this.score > existingEntry.score) {
+                        existingEntry.score = this.score;
+                        existingEntry.date = new Date().toISOString();
+                    }
+                } else {
+                    // Add new entry
+                    leaderboard.push({
+                        username: this.username,
+                        score: this.score,
+                        date: new Date().toISOString()
+                    });
+                }
+
+                // Sort and keep top 100
+                leaderboard.sort((a, b) => b.score - a.score);
+                const top100 = leaderboard.slice(0, 100);
+                
+                localStorage.setItem('ctbLeaderboard', JSON.stringify(top100));
+            }
+
+            getLeaderboard() {
+                const stored = localStorage.getItem('ctbLeaderboard');
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            showLeaderboard() {
+                const leaderboard = this.getLeaderboard();
+                const list = document.getElementById('leaderboard-list');
+                
+                list.innerHTML = '';
+                
+                if (leaderboard.length === 0) {
+                    list.innerHTML = '<li class="leaderboard-item">No scores yet. Be the first!</li>';
+                } else {
+                    leaderboard.forEach((entry, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'leaderboard-item';
+                        if (index < 3) li.classList.add('top-three');
+                        
+                        li.innerHTML = `
+                            <span class="rank">#${index + 1}</span>
+                            <span class="username">${entry.username}</span>
+                            <span class="score">${entry.score} pts</span>
+                        `;
+                        
+                        if (entry.username === this.username) {
+                            li.style.background = 'linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)';
+                            li.style.fontWeight = 'bold';
+                        }
+                        
+                        list.appendChild(li);
+                    });
+                }
+                
+                this.showScreen('leaderboard');
+            }
+        }
+
+        // Initialize game when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new CatchTheBallGame();
+        });
+    </script>
+</body>
 </html>
